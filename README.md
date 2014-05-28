@@ -1,6 +1,8 @@
-ExoArmor
-========
+Factorization Rejects
+=====================
 
-Non-working archive of ExoArmor code, which is removed from Factorization. It's missing much setup/recipe code.
+Non-functioning archive of components removed from Factorization.
 
-http://opensource.org/licenses/MIT license.
+License: http://opensource.org/licenses/MIT
+
+
