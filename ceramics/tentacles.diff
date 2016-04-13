@@ -1,0 +1,419 @@
+diff --git a/src/main/java/factorization/common/FactorizationClientProxy.java b/src/main/java/factorization/common/FactorizationClientProxy.java
+index 8bdcce3..bfc84fa 100644
+--- a/src/main/java/factorization/common/FactorizationClientProxy.java
++++ b/src/main/java/factorization/common/FactorizationClientProxy.java
+@@ -5,8 +5,6 @@ import factorization.api.Coord;
+ import factorization.artifact.ContainerForge;
+ import factorization.artifact.GuiArtifactForge;
+ import factorization.beauty.*;
+-import factorization.ceramics.TileEntityGreenware;
+-import factorization.ceramics.TileEntityGreenwareRender;
+ import factorization.charge.TileEntityHeater;
+ import factorization.charge.TileEntityHeaterRenderer;
+ import factorization.charge.enet.TileEntityLeydenJar;
+@@ -51,7 +49,6 @@ import net.minecraft.client.renderer.ItemMeshDefinition;
+ import net.minecraft.client.renderer.entity.RenderManager;
+ import net.minecraft.client.renderer.entity.RenderSnowball;
+ import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
+-import net.minecraft.client.resources.model.IBakedModel;
+ import net.minecraft.client.resources.model.ModelBakery;
+ import net.minecraft.client.resources.model.ModelResourceLocation;
+ import net.minecraft.client.settings.GameSettings;
+@@ -289,9 +286,7 @@ public class FactorizationClientProxy extends FactorizationProxy {
+                     new ModelResourceLocation("factorization:diamond_cutting_head#inventory"));
+         }
+ 
+-        NORELEASE.fixme("Glaze bucket");
+         NORELEASE.fixme("Artifacts");
+-        // MinecraftForgeClient.registerItemRenderer(Core.registry.glaze_bucket, new ItemRenderGlazeBucket());
+         // MinecraftForgeClient.registerItemRenderer(Core.registry.brokenTool, new RenderBrokenArtifact());
+         Core.loadBus(GooRenderer.INSTANCE);
+     }
+@@ -331,7 +326,6 @@ public class FactorizationClientProxy extends FactorizationProxy {
+     @Override
+     public void registerTesrs() {
+         setTileEntityRendererDispatcher(TileEntityDayBarrel.class, new TileEntityDayBarrelRenderer());
+-        setTileEntityRendererDispatcher(TileEntityGreenware.class, new TileEntityGreenwareRender());
+         setTileEntityRendererDispatcher(TileEntityHeater.class, new TileEntityHeaterRenderer());
+         setTileEntityRendererDispatcher(TileEntityLeydenJar.class, new TileEntityLeydenJarRender());
+         setTileEntityRendererDispatcher(TileEntityCompressionCrafter.class, new TileEntityCompressionCrafterRenderer());
+diff --git a/src/main/java/factorization/common/FactoryType.java b/src/main/java/factorization/common/FactoryType.java
+index 4205d80..d576959 100644
+--- a/src/main/java/factorization/common/FactoryType.java
++++ b/src/main/java/factorization/common/FactoryType.java
+@@ -2,7 +2,6 @@ package factorization.common;
+ 
+ import factorization.artifact.TileEntityLegendarium;
+ import factorization.beauty.*;
+-import factorization.ceramics.TileEntityGreenware;
+ import factorization.charge.*;
+ import factorization.charge.enet.TileEntityLeydenJar;
+ import factorization.crafting.TileEntityCompressionCrafter;
+@@ -49,7 +48,7 @@ public enum FactoryType {
+     SOLARBOILER(22, false, TileEntitySolarBoiler.class, "factory_solarfurnace"), //Produces steam from sunlight
+     //ROCKETENGINE(23, false, TileEntityRocketEngine.class, "factory_rocketengine"), //Is a rocket
+     EXTENDED(24, false, TileEntityExtension.class, "factory_ext"), //Used for multipiece blocks (like beds & rocket engines)
+-    CERAMIC(25, false, TileEntityGreenware.class, "factory_ceramic"), //clay sculpture
++    //25 -- Used to be CERAMIC
+     LEYDENJAR(26, false, TileEntityLeydenJar.class, "factory_leyjar"), //inefficient bulk energy storage
+     SERVORAIL(27, false, TileEntityServoRail.class, "factory_rail"),
+     PARASIEVE(28, true, TileEntityParaSieve.class, "factory_sieve"),
+diff --git a/src/main/java/factorization/common/Registry.java b/src/main/java/factorization/common/Registry.java
+index 5172524..8259e62 100644
+--- a/src/main/java/factorization/common/Registry.java
++++ b/src/main/java/factorization/common/Registry.java
+@@ -5,10 +5,6 @@ import factorization.artifact.BlockForge;
+ import factorization.artifact.ItemBrokenArtifact;
+ import factorization.artifact.ItemPotency;
+ import factorization.beauty.*;
+-import factorization.ceramics.ItemGlazeBucket;
+-import factorization.ceramics.ItemSculptingTool;
+-import factorization.ceramics.TileEntityGreenware;
+-import factorization.ceramics.TileEntityGreenware.ClayState;
+ import factorization.charge.BlockFurnaceHeater;
+ import factorization.charge.ItemAcidBottle;
+ import factorization.charge.ItemChargeMeter;
+@@ -52,7 +48,6 @@ import net.minecraft.init.Items;
+ import net.minecraft.inventory.IInventory;
+ import net.minecraft.inventory.InventoryCrafting;
+ import net.minecraft.item.Item;
+-import net.minecraft.item.ItemBlock;
+ import net.minecraft.item.ItemStack;
+ import net.minecraft.item.crafting.FurnaceRecipes;
+ import net.minecraft.item.crafting.IRecipe;
+@@ -130,7 +125,6 @@ public class Registry {
+             lamp_item,
+             leydenjar_item, leydenjar_item_full, heater_item, solarboiler_item, caliometric_burner_item,
+             mirror_item_hidden,
+-            greenware_item,
+             parasieve_item,
+             compression_crafter_item,
+             sap_generator_item, anthro_generator_item,
+@@ -147,10 +141,6 @@ public class Registry {
+     public ItemChargeMeter charge_meter;
+     public ItemBlockProxy mirror;
+     public ItemCraftingComponent sludge;
+-    public ItemSculptingTool sculpt_tool;
+-    public ItemGlazeBucket glaze_bucket;
+-    public ItemStack empty_glaze_bucket;
+-    public ItemStack base_common, glaze_base_mimicry;
+     public ItemCraftingComponent logicMatrix, logicMatrixIdentifier, logicMatrixController;
+     public ItemMatrixProgrammer logicMatrixProgrammer;
+     public Fluid steamFluid;
+@@ -400,7 +390,6 @@ public class Registry {
+         bibliogen_item = FactoryType.BIBLIO_GEN.itemStack();
+         heater_item = FactoryType.HEATER.itemStack();
+         mirror_item_hidden = FactoryType.MIRROR.itemStack();
+-        greenware_item = FactoryType.CERAMIC.itemStack();
+         if (DeltaChunk.enabled()) {
+             hinge = FactoryType.HINGE.itemStack();
+             wind_mill = FactoryType.WIND_MILL_GEN.itemStack();
+@@ -443,10 +432,6 @@ public class Registry {
+         leydenjar_item_full.setTagCompound(tag);
+ 
+         //ceramics
+-        sculpt_tool = new ItemSculptingTool();
+-        glaze_bucket = new ItemGlazeBucket();
+-        empty_glaze_bucket = new ItemStack(glaze_bucket, 1, 100);
+-        spawnPoster = new ItemSpawnPoster();
+ 
+         //Misc
+         pocket_table = new ItemPocketTable();
+@@ -691,201 +676,6 @@ public class Registry {
+                 '#', copper_ingot);
+         FurnaceRecipes.instance().addSmeltingRecipe(copper_ore_item.copy(), new ItemStack(copper_ingot), 0.3F);
+         FurnaceRecipes.instance().addSmeltingRecipe(new ItemStack(dark_iron_ore), new ItemStack(dark_iron_ingot), 0.5F);
+-
+-        //ceramics
+-        oreRecipe(new ItemStack(sculpt_tool),
+-                " c",
+-                "/ ",
+-                'c', Items.clay_ball,
+-                '/', Items.stick);
+-        ItemSculptingTool.addModeChangeRecipes();
+-        oreRecipe(empty_glaze_bucket.copy(),
+-                "_ _",
+-                "# #",
+-                "#_#",
+-                '_', "slabWood",
+-                '#', "plankWood");
+-        
+-        base_common = glaze_bucket.makeCraftingGlaze("base_common");
+-        glaze_base_mimicry = glaze_bucket.makeCraftingGlaze("base_mimicry");
+-        
+-        ItemStack lapis = new ItemStack(Items.dye, 1, 4);
+-        
+-        shapelessOreRecipe(base_common, empty_glaze_bucket.copy(), Items.water_bucket, new ItemStack(Blocks.sand, 1, OreDictionary.WILDCARD_VALUE), Items.clay_ball);
+-        shapelessOreRecipe(glaze_base_mimicry, base_common, Items.redstone, Items.slime_ball, lapis);
+-        
+-        ItemStack waterFeature = glaze_bucket.makeMimicingGlaze(Blocks.water, 0, -1);
+-        ItemStack lavaFeature = glaze_bucket.makeMimicingGlaze(Blocks.lava, 0, -1);
+-        shapelessOreRecipe(waterFeature, base_common, Items.water_bucket);
+-        shapelessOreRecipe(lavaFeature, base_common, Items.lava_bucket);
+-        
+-        Core.registry.glaze_bucket.doneMakingStandardGlazes();
+-        
+-        //Sculpture combiniation recipe
+-        IRecipe sculptureMergeRecipe = new IRecipe() {
+-            ArrayList<ItemStack> merge(InventoryCrafting inv) {
+-                ArrayList<ItemStack> match = null;
+-                for (int i = 0; i < inv.getSizeInventory(); i++) {
+-                    ItemStack is = inv.getStackInSlot(i);
+-                    if (is == null) {
+-                        continue;
+-                    }
+-                    if (!is.hasTagCompound()) {
+-                        return null;
+-                    }
+-                    if (ItemUtil.similar(Core.registry.greenware_item, is)) {
+-                        if (match == null) match = new ArrayList<ItemStack>(2);
+-                        match.add(is);
+-                    } else {
+-                        return null;
+-                    }
+-                }
+-                if (match == null || match.size() != 2) {
+-                    return null;
+-                }
+-                return match;
+-            }
+-            
+-            @Override
+-            public boolean matches(InventoryCrafting inventorycrafting, World world) {
+-                ArrayList<ItemStack> matching = merge(inventorycrafting);
+-                if (matching == null) {
+-                    return false;
+-                }
+-                int partCount = 0;
+-                TileEntityGreenware rep = (TileEntityGreenware) FactoryType.CERAMIC.getRepresentative();
+-                for (ItemStack is : matching) {
+-                    rep.loadFromStack(is);
+-                    if (rep.getState() != ClayState.WET) {
+-                        return false;
+-                    }
+-                    partCount += rep.parts.size();
+-                    if (partCount >= TileEntityGreenware.MAX_PARTS) {
+-                        return false;
+-                    }
+-                }
+-                return true;
+-            }
+-            
+-            @Override
+-            public int getRecipeSize() {
+-                return 2;
+-            }
+-            
+-            @Override
+-            public ItemStack getRecipeOutput() {
+-                return greenware_item.copy();
+-            }
+-
+-            @Override
+-            public ItemStack[] getRemainingItems(InventoryCrafting inv) {
+-                return CraftUtil.getRemainingItems(inv);
+-            }
+-
+-            @Override
+-            public ItemStack getCraftingResult(InventoryCrafting inventorycrafting) {
+-                ArrayList<ItemStack> matching = merge(inventorycrafting);
+-                TileEntityGreenware target = new TileEntityGreenware();
+-                for (ItemStack is : matching) {
+-                    TileEntityGreenware rep = (TileEntityGreenware) FactoryType.CERAMIC.getRepresentative();
+-                    rep.loadFromStack(is);
+-                    target.parts.addAll(rep.parts);
+-                }
+-                return target.getItem();
+-            }
+-        };
+-        GameRegistry.addRecipe(sculptureMergeRecipe);
+-        
+-        IRecipe mimicryGlazeRecipe = new IRecipe() {
+-            @Override
+-            public boolean matches(InventoryCrafting inventorycrafting, World world) {
+-                int mimic_items = 0;
+-                int other_items = 0;
+-                for (int i = 0; i < inventorycrafting.getSizeInventory(); i++) {
+-                    ItemStack is = inventorycrafting.getStackInSlot(i);
+-                    if (is == null) {
+-                        continue;
+-                    }
+-                    if (ItemUtil.couldMerge(glaze_base_mimicry, is)) {
+-                        mimic_items++;
+-                    } else {
+-                        if (!(is.getItem() instanceof ItemBlock)) continue;
+-                        int d = is.getItemDamage();
+-                        if (d < 0 || d > 16) {
+-                            return false;
+-                        }
+-                        Block b = Block.getBlockFromItem(is.getItem());
+-                        if (b == null || b.getUnlocalizedName().equals("tile.ForgeFiller")) {
+-                            return false;
+-                        }
+-                        other_items++;
+-                    }
+-                }
+-                return mimic_items == 1 && other_items == 1;
+-            }
+-            
+-            @Override
+-            public int getRecipeSize() {
+-                return 2;
+-            }
+-            
+-            @Override
+-            public ItemStack getRecipeOutput() {
+-                return glaze_base_mimicry;
+-            }
+-
+-            @Override
+-            public ItemStack[] getRemainingItems(InventoryCrafting inv) {
+-                return CraftUtil.getRemainingItems(inv);
+-            }
+-
+-            final int[] side_map = new int[] {
+-                    1, 2, 1,
+-                    4, 0, 5,
+-                    0, 3, 0
+-            };
+-            @Override
+-            public ItemStack getCraftingResult(InventoryCrafting inventorycrafting) {
+-                int bucket_slot = -1, block_slot = -1;
+-
+-                for (int i = 0; i < inventorycrafting.getSizeInventory(); i++) {
+-                    ItemStack is = inventorycrafting.getStackInSlot(i);
+-                    if (is == null) {
+-                        continue;
+-                    }
+-                    if (ItemUtil.couldMerge(glaze_base_mimicry, is)) {
+-                        bucket_slot = i;
+-                        continue;
+-                    }
+-                    int d = is.getItemDamage();
+-                    if (d < 0 || d > 16) {
+-                        continue;
+-                    }
+-                    if (!(is.getItem() instanceof ItemBlock)) continue;
+-                    Block b = Block.getBlockFromItem(is.getItem());
+-                    if (b == null || b.getUnlocalizedName().equals("tile.ForgeFiller")) {
+-                        continue;
+-                    }
+-                    block_slot = i;
+-                }
+-                if (bucket_slot == -1 || block_slot == -1) {
+-                    return null;
+-                }
+-                int side = 0;
+-                try {
+-                    if (block_slot == 4) {
+-                        side = side_map[block_slot];
+-                    } else {
+-                        side = -1;
+-                    }
+-                } catch (ArrayIndexOutOfBoundsException e) {}
+-                ItemStack is = inventorycrafting.getStackInSlot(block_slot);
+-                return glaze_bucket.makeMimicingGlaze(Block.getBlockFromItem(is.getItem()), is.getItemDamage(), side);
+-            }
+-        };
+-        GameRegistry.addRecipe(mimicryGlazeRecipe);
+-        RecipeSorter.register("factorization:sculptureMerge", sculptureMergeRecipe.getClass(), Category.SHAPELESS, "");
+-        RecipeSorter.register("factorization:mimicryGlaze", mimicryGlazeRecipe.getClass(), Category.SHAPELESS, "");
+         oreRecipe(new ItemStack(spawnPoster),
+                 "0",
+                 "-",
+@@ -985,12 +775,6 @@ public class Registry {
+                 'G', Blocks.glass_pane,
+                 'W', diamond_shard);
+ 
+-        oreRecipe(greenware_item,
+-                "c",
+-                "-",
+-                'c', Items.clay_ball,
+-                '-', "slabWood");
+-
+         //Electricity
+ 
+         oreRecipe(new ItemStack(wirePlacer, 8),
+diff --git a/src/main/java/factorization/shared/BlockFactorization.java b/src/main/java/factorization/shared/BlockFactorization.java
+index 1c21112..d4ef70b 100644
+--- a/src/main/java/factorization/shared/BlockFactorization.java
++++ b/src/main/java/factorization/shared/BlockFactorization.java
+@@ -246,8 +246,6 @@ public class BlockFactorization extends BlockContainer {
+         put(itemList, reg.wind_mill);
+         put(itemList, reg.water_wheel);
+ 
+-        put(itemList, reg.greenware_item);
+-
+         if (reg.rocket_engine != null) {
+             put(itemList, new ItemStack(reg.rocket_engine));
+         }
+diff --git a/src/main/java/factorization/shared/ItemFactorizationBlock.java b/src/main/java/factorization/shared/ItemFactorizationBlock.java
+index 17dcc26..2c90fb3 100644
+--- a/src/main/java/factorization/shared/ItemFactorizationBlock.java
++++ b/src/main/java/factorization/shared/ItemFactorizationBlock.java
+@@ -1,17 +1,13 @@
+ package factorization.shared;
+ 
+ import factorization.api.Coord;
+-import factorization.ceramics.TileEntityGreenware;
+-import factorization.ceramics.TileEntityGreenware.ClayState;
+ import factorization.charge.enet.TileEntityLeydenJar;
+ import factorization.common.FactoryType;
+-import factorization.util.ItemUtil;
+ import net.minecraft.block.Block;
+ import net.minecraft.block.state.IBlockState;
+ import net.minecraft.entity.player.EntityPlayer;
+ import net.minecraft.item.ItemBlock;
+ import net.minecraft.item.ItemStack;
+-import net.minecraft.nbt.NBTTagCompound;
+ import net.minecraft.tileentity.TileEntity;
+ import net.minecraft.util.BlockPos;
+ import net.minecraft.util.EnumFacing;
+@@ -81,16 +77,6 @@ public class ItemFactorizationBlock extends ItemBlock {
+ 
+     @Override
+     public void addInformation(ItemStack is, EntityPlayer player, List<String> infoList, boolean verbose) {
+-        if (Core.registry.greenware_item != null && is.isItemEqual(Core.registry.greenware_item) /* required to not compare NBT here */) {
+-            NBTTagCompound tag = is.getTagCompound();
+-            if (tag != null) {
+-                TileEntityGreenware teg = (TileEntityGreenware) FactoryType.CERAMIC.getRepresentative();
+-                teg.readFromNBT(tag);
+-                ClayState state = teg.getState();
+-                infoList.add(teg.parts.size() + " parts");
+-                infoList.add(state.toString());
+-            }
+-        }
+         if (this == Core.registry.leydenjar_item.getItem()) {
+             int perc = 0;
+             if (is.hasTagCompound()) {
+diff --git a/src/main/java/factorization/shared/TileEntityExtension.java b/src/main/java/factorization/shared/TileEntityExtension.java
+index 817da16..ef4fe17 100644
+--- a/src/main/java/factorization/shared/TileEntityExtension.java
++++ b/src/main/java/factorization/shared/TileEntityExtension.java
+@@ -5,10 +5,7 @@ import factorization.api.HeatConverters;
+ import factorization.api.IFurnaceHeatable;
+ import factorization.api.datahelpers.DataHelper;
+ import factorization.api.datahelpers.Share;
+-import factorization.ceramics.TileEntityGreenware;
+ import factorization.common.FactoryType;
+-import factorization.net.StandardMessageType;
+-import io.netty.buffer.ByteBuf;
+ import net.minecraft.block.Block;
+ import net.minecraft.entity.Entity;
+ import net.minecraft.entity.player.EntityPlayer;
+@@ -135,14 +132,7 @@ public class TileEntityExtension extends TileEntityCommon implements IFurnaceHea
+     public MovingObjectPosition collisionRayTrace(Vec3 startVec, Vec3 endVec) {
+         TileEntityCommon p = getParent();
+         if (p != null) {
+-            MovingObjectPosition ret = p.collisionRayTrace(startVec, endVec);
+-            if (!(p instanceof TileEntityGreenware)) {
+-                //hax
+-                if (ret != null && ret.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK) {
+-                    return new MovingObjectPosition(ret.hitVec, ret.sideHit, pos);
+-                }
+-            }
+-            return ret;
++            return p.collisionRayTrace(startVec, endVec);
+         }
+         return super.collisionRayTrace(startVec, endVec);
+     }
